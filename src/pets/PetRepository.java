@@ -1,17 +1,52 @@
 package pets;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class PetRepository {
     private static final Path PASTA = Path.of("data/petsCadastrados");
 
     public PetRepository() {
         criarPasta();
+    }
+
+    public void salvarPet(Pet pet) {
+        Path arquivo = criarArquivo(pet.getNomeNormalizado());
+        Endereco petEndereco = pet.getEndereco();
+
+        try (BufferedWriter writer = Files.newBufferedWriter(arquivo)) {
+            writer.write("1 - "+pet.getNome()+"\n"+
+                        "2 - "+pet.getTipoPet().getFormatado()+"\n"+
+                        "3 - "+pet.getSexoPet().getFormatado()+"\n"+
+                        "4 - Rua "+petEndereco.getRua()+", "+petEndereco.getNumeroFormatado()+", "+petEndereco.getCidade()+"\n"+
+                        "5 - "+pet.getIdadeFormatada()+" anos\n"+
+                        "6 - "+pet.getPesoFormatado()+"kg\n"+
+                        "7 - "+pet.getRacaFormatada());
+
+        } catch (IOException e) {
+            throw new RuntimeException("Erro ao salvar no arquivo", e);
+        }
+    }
+
+    public List<Pet> listarTodos() {
+        File pasta = new File(PASTA.toString());
+        File[] arquivos = pasta.listFiles((dir, nome) -> nome.endsWith(".txt"));
+        List<Pet> pets = new ArrayList<>();
+
+        if (arquivos == null) return pets;
+        for (File arquivo : arquivos) {
+            pets.add(lerArquivo(arquivo));
+        }
+
+        return pets;
     }
 
     private void criarPasta() {
@@ -35,21 +70,31 @@ public class PetRepository {
         }
     }
 
-    public void salvarPet(Pet pet) {
-        Path arquivo = criarArquivo(pet.getNomeNormalizado());
-        Endereco petEndereco = pet.getEndereco();
+    private Pet lerArquivo(File arquivo) {
+        try {
+            List<String> linhas = Files.readAllLines(arquivo.toPath());
 
-        try (BufferedWriter writer = Files.newBufferedWriter(arquivo)) {
-            writer.write("1 - "+pet.getNome()+"\n"+
-                        "2 - "+pet.getTipoPet().getFormatado()+"\n"+
-                        "3 - "+pet.getSexoPet().getFormatado()+"\n"+
-                        "4 - Rua "+petEndereco.getRua()+", "+petEndereco.getNumeroFormatado()+", "+petEndereco.getCidade()+"\n"+
-                        "5 - "+pet.getIdadeFormatada()+" anos\n"+
-                        "6 - "+pet.getPesoFormatado()+"kg\n"+
-                        "7 - "+pet.getRacaFormatada());
+            String nome = linhas.get(0).split(" - ")[1];
+            TipoPet tipo = TipoPet.fromTexto(linhas.get(1).split(" - ")[1]);
+            SexoPet sexo = SexoPet.fromTexto(linhas.get(2).split(" - ")[1]);
+            String idadeStr = linhas.get(4).split(" - ")[1];
+            String pesoStr = linhas.get(5).split(" - ")[1];
+            String raca = linhas.get(6).split(" - ")[1];
 
+            String endereco = linhas.get(3);
+            String semPrefixo = endereco.startsWith("Rua ") ? endereco.substring(4) : endereco;
+            String[] enderecoPartes = Arrays.stream(semPrefixo.split(","))
+                    .map(String::trim)
+                    .toArray(String[]::new);
+            Endereco petEndereco = new Endereco(enderecoPartes);
+
+            Double idade = Double.parseDouble(idadeStr.split(" ")[0]);
+            Double peso = Double.parseDouble(pesoStr.split("kg")[0].trim());
+
+            return new Pet(nome, tipo, sexo, petEndereco, idade, peso, raca);
+ 
         } catch (IOException e) {
-            throw new RuntimeException("Erro ao salvar no arquivo", e);
+            throw new RuntimeException("Erro ao ler o arquivo", e);
         }
     }
 }

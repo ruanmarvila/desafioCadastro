@@ -9,26 +9,29 @@ public class Endereco {
     private String numero;
     private String cidade;
 
-    private Endereco(String rua, String numero, String cidade) {
-        this.rua = rua;
-        this.numero = numero;
-        this.cidade = cidade;
+    public Endereco(String rua, String numero, String cidade) {
+        setRua(rua);
+        setNumero(numero);
+        setCidade(cidade);
     }
 
-    public static Endereco criarEndereco(String[] campos) {
-        if (campos.length < 3) {
-            throw new EnderecoInvalidoException("Endereço inválido.");
+    public Endereco(String[] campos) {
+        this(
+            campos.length > 0 ? campos[0] : null,
+            campos.length > 1 ? campos[1] : null,
+            campos.length > 2 ? campos[2] : null
+        );
+    }
+
+    public String getRua() {
+        return rua;
+    }
+
+    public void setRua(String rua) {
+        if (rua == null || rua.isBlank()) {
+            throw new EnderecoInvalidoException("Rua é obrigatória.");
         }
-
-        String rua = campos[0].isBlank() ? null : campos[0];
-        String numero = campos[1].isBlank() ? null : campos[1];
-        String cidade = campos[2].isBlank() ? null : campos[2];
-
-        if (rua == null || cidade == null) {
-            throw new EnderecoInvalidoException("Rua e cidade são obrigatórios.");
-        }
-
-        return new Endereco(rua, numero, cidade);
+        this.rua = rua;
     }
 
     public String getNumero() {
@@ -40,15 +43,7 @@ public class Endereco {
     }
 
     public void setNumero(String numero) {
-        this.numero = numero;
-    }
-
-    public String getRua() {
-        return rua;
-    }
-
-    public void setRua(String rua) {
-        this.rua = rua;
+        this.numero = numero == null || numero.isBlank() ? null : rua;
     }
 
     public String getCidade() {
@@ -56,6 +51,9 @@ public class Endereco {
     }
 
     public void setCidade(String cidade) {
+        if (cidade == null || cidade.isBlank()) {
+            throw new EnderecoInvalidoException("Cidade é obrigatória.");
+        }
         this.cidade = cidade;
     }
 }

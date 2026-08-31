@@ -8,7 +8,7 @@ import pets.Pet;
 import pets.PetService;
 
 public class Menu {
-    private static final Scanner scanner = new Scanner(System.in);
+    private final Scanner scanner = new Scanner(System.in);
     private final FormularioService formService = new FormularioService();
     private final PetService petService = new PetService();
 
@@ -16,10 +16,10 @@ public class Menu {
         while (true) {
             System.out.println(
                 "1. Cadastrar um novo pet\n" +
-                "2. Alterar os dados do pet cadastrado\n" +
-                "3. Deletar um pet cadastrado\n" +
-                "4. Listar todos os pets cadastrados\n" +
-                "5. Listar pets por algum critério (idade, nome, raça)\n" +
+                "2. Listar pets por algum critério (idade, nome, raça)\n" +
+                "3. Alterar os dados do pet cadastrado\n" +
+                "4. Deletar um pet cadastrado\n" +
+                "5. Listar todos os pets cadastrados\n" +
                 "6. Sair"
             );
 
@@ -30,6 +30,12 @@ public class Menu {
                 switch (opcao) {
                     case "1" -> {
                         cadastrarPet();
+                    }
+                    case "2" -> {
+
+                    }
+                    case "5" -> {
+                        listarPets();
                     }
                     case "6" -> {
                         System.out.println("Saindo...");
@@ -70,7 +76,16 @@ public class Menu {
         String sexo = scanner.nextLine().trim();
 
         System.out.println(perguntas.get(3));
-        String[] endereco = scanner.nextLine().trim().split("\\s+");
+        System.out.println("Rua:");
+        String rua = scanner.nextLine().trim();
+
+        System.out.println("Número da casa:");
+        String numero = scanner.nextLine().trim();
+
+        System.out.println("Cidade:");
+        String cidade = scanner.nextLine().trim();
+
+        String[] enderecoCampos = {rua, numero, cidade};
 
         System.out.println(perguntas.get(4));
         String[] idade = scanner.nextLine().trim().split("\\s+");
@@ -81,7 +96,12 @@ public class Menu {
         System.out.println(perguntas.get(6));
         String raca = scanner.nextLine().trim();
 
-        Pet pet = petService.cadastrar(nome, tipo, sexo, endereco, idade, peso, raca);
+        Pet pet = petService.cadastrar(nome, tipo, sexo, enderecoCampos, idade, peso, raca);
         System.out.println("Pet cadastrado com sucesso: " + pet.getNome());
+    }
+
+    private void listarPets() {
+        List<String> pets = petService.listarTodos();
+        pets.forEach(System.out::println);
     }
 }

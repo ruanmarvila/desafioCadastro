@@ -1,14 +1,48 @@
 package pets;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import pets.excecoes.IdadeInvalidaException;
 import pets.excecoes.PesoInvalidoException;
 
 public class PetService {
     private static PetRepository repo = new PetRepository();
 
-    private static Double validarIdade(String[] campos) {
-        String idadeStr = campos[0];
-        String sufixo = campos.length > 1 ? campos[1] : null;
+    public Pet cadastrar(String nome, String tipoOpcao, String sexoOpcao, String[] enderecoCampos, 
+        String[] idadeCampos, String pesoStr, String raca){
+
+        TipoPet tipoPet = TipoPet.fromOpcao(tipoOpcao);
+        SexoPet sexoPet = SexoPet.fromOpcao(sexoOpcao);
+        Endereco endereco = new Endereco(enderecoCampos);
+        Double idade = parseIdade(idadeCampos);
+        Double peso = parsePeso(pesoStr);
+
+        Pet pet = new Pet(nome, tipoPet, sexoPet, endereco, idade, peso, raca);
+        repo.salvarPet(pet);
+        return pet;
+    }
+
+    public List<String> listarTodos() {
+        List<Pet> petsLista = repo.listarTodos();
+        List<String> pets = new ArrayList<>();
+
+        int contador = 1;
+        for (Pet pet : petsLista) {
+            pets.add(contador + ". " + formatarPet(pet));
+            contador++;
+        }
+
+        if (pets.isEmpty()) {
+            return List.of("[]");
+        }
+
+        return pets;
+    }
+
+    private static Double parseIdade(String[] idadeCampos) {
+        String idadeStr = idadeCampos[0];
+        String sufixo = idadeCampos.length > 1 ? idadeCampos[1] : null;
 
         if (idadeStr == null || idadeStr.isBlank()) {
             return null;
@@ -29,7 +63,7 @@ public class PetService {
         return idade;
     }
 
-    private static Double validarPeso(String pesoStr) {
+    private static Double parsePeso(String pesoStr) {
         if (pesoStr == null || pesoStr.isBlank()) {
             return null;
         }
@@ -45,17 +79,15 @@ public class PetService {
         return peso;
     }
 
-    public Pet cadastrar(String nome, String tipoOpcao, String sexoOpcao, String[] enderecoCampos, 
-        String[] idadeCampos, String pesoStr, String raca){
-
-        TipoPet tipoPet = TipoPet.fromOpcao(tipoOpcao);
-        SexoPet sexoPet = SexoPet.fromOpcao(sexoOpcao);
-        Endereco endereco = Endereco.criarEndereco(enderecoCampos);
-        Double idade = validarIdade(idadeCampos);
-        Double peso = validarPeso(pesoStr);
-
-        Pet pet = new Pet(nome, tipoPet, sexoPet, endereco, idade, peso, raca);
-        repo.salvarPet(pet);
-        return pet;
+    private String formatarPet(Pet pet) {
+        return pet.getNome() + " - " + 
+        pet.getTipoPet().getFormatado() + " - " + 
+        pet.getSexoPet().getFormatado() + " - Rua " + 
+        pet.getEndereco().getRua() + ", " + 
+        pet.getEndereco().getNumeroFormatado() + ", " + 
+        pet.getEndereco().getCidade() + " - " + 
+        pet.getIdade() + " anos" + " - " + 
+        pet.getPeso() + "kg - " + 
+        pet.getRaca();
     }
 }

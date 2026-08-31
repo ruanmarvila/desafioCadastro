@@ -12,6 +12,10 @@ public enum SexoPet {
         FEMEA, "Fêmea"
     );
 
+    public String getFormatado() {
+        return SEXO_FORMATADO.getOrDefault(this, this.name());
+    }
+
     public static SexoPet fromOpcao(String opcao) {
         return switch(opcao) {
             case "1" -> MACHO;
@@ -20,7 +24,11 @@ public enum SexoPet {
         };
     }
 
-    public String getFormatado() {
-        return SEXO_FORMATADO.getOrDefault(this, this.name());
+    public static SexoPet fromTexto(String sexo) {
+        return switch(sexo.trim().toUpperCase()) {
+            case "MACHO" -> MACHO;
+            case "FÊMEA", "FEMEA" -> FEMEA;
+            default -> throw new SexoPetInvalidoException("Sexo inválido:" + sexo);
+        };
     }
 }

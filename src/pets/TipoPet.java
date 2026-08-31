@@ -12,6 +12,10 @@ public enum TipoPet {
         GATO, "Gato"
     );
 
+    public String getFormatado() {
+        return TIPO_FORMATADO.getOrDefault(this, this.name());
+    }
+
     public static TipoPet fromOpcao(String opcao) {
         return switch(opcao) {
             case "1" -> CACHORRO;
@@ -20,7 +24,11 @@ public enum TipoPet {
         };
     }
 
-    public String getFormatado() {
-        return TIPO_FORMATADO.getOrDefault(this, this.name());
+    public static TipoPet fromTexto(String texto) {
+        return switch(texto.trim().toUpperCase()) {
+            case "CACHORRO" -> CACHORRO;
+            case "GATO" -> GATO;
+            default -> throw new TipoPetInvalidoException("Tipo inválido:" + texto);
+        };
     }
 }

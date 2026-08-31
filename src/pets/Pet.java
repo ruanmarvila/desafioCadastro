@@ -25,15 +25,6 @@ public class Pet {
         setPeso(peso);
         setRaca(raca);
     }
-
-    private static void validarNome(String nome) {
-        if (nome == null || nome.isBlank()) {
-            throw new NomeInvalidoException("O nome é obrigatório.");
-        }
-        if (!nome.matches("[a-zA-ZÀ-ÿ]+( [a-zA-ZÀ-ÿ]+)+")) {
-            throw new NomeInvalidoException("O pet precisa de nome e sobrenome");
-        }
-    }
     
     public String getNome() {
         return nome;
@@ -44,7 +35,12 @@ public class Pet {
     }
 
     public void setNome(String nome) {
-        validarNome(nome);
+        if (nome == null || nome.isBlank()) {
+            throw new NomeInvalidoException("O nome é obrigatório.");
+        }
+        if (!nome.matches("[a-zA-ZÀ-ÿ]+( [a-zA-ZÀ-ÿ]+)+")) {
+            throw new NomeInvalidoException("O pet precisa de nome e sobrenome");
+        }
         this.nome = nome;
     }
 
@@ -73,7 +69,14 @@ public class Pet {
     }
 
     public void setIdade(Double idade) {
-        if (idade != null && idade > 20) {
+        if (idade == null) {
+            this.idade = null;
+            return;
+        }
+        if (idade < 0) {
+            throw new IdadeInvalidaException("Idade não pode ser nageativa.");
+        }
+        if (idade > 20) {
             throw new IdadeInvalidaException("Idade não pode ser maior que 20 anos.");
         }
         this.idade = idade;
@@ -88,7 +91,11 @@ public class Pet {
     }
 
     public void setPeso(Double peso) {
-        if (peso != null && (peso < 0.5 || peso > 60)) {
+        if (peso == null) {
+            this.peso = null;
+            return;
+        }
+        if (peso < 0.5 || peso > 60) {
             throw new PesoInvalidoException("O peso precisa estar entre 0.5kg e 60kg.");
         }
         this.peso = peso;
@@ -99,7 +106,7 @@ public class Pet {
     }
 
     public String getRacaFormatada() {
-        return raca != null || raca.isBlank() ? raca : NAO_INFORMADO;
+        return raca != null || !raca.isBlank() ? raca : NAO_INFORMADO;
     }
 
     public void setRaca(String raca) {
