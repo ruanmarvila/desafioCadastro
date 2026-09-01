@@ -6,7 +6,6 @@ import pets.excecoes.PesoInvalidoException;
 import pets.excecoes.RacaInvalidaException;
 
 public class Pet {
-    private static final String NAO_INFORMADO = "NÃO INFORMADO";
 
     private String nome;
     private TipoPet tipoPet;
@@ -65,7 +64,7 @@ public class Pet {
     }
 
     public String getIdadeFormatada() {
-        return idade != null ? String.valueOf(idade) : NAO_INFORMADO;
+        return idade != null ? String.valueOf(idade) : Constantes.NAO_INFORMADO;
     }
 
     public void setIdade(Double idade) {
@@ -87,7 +86,7 @@ public class Pet {
     }
 
     public String getPesoFormatado() {
-        return peso != null ? String.valueOf(peso) : NAO_INFORMADO;
+        return peso != null ? String.valueOf(peso) : Constantes.NAO_INFORMADO;
     }
 
     public void setPeso(Double peso) {
@@ -106,7 +105,7 @@ public class Pet {
     }
 
     public String getRacaFormatada() {
-        return raca != null || !raca.isBlank() ? raca : NAO_INFORMADO;
+        return raca != null || !raca.isBlank() ? raca : Constantes.NAO_INFORMADO;
     }
 
     public void setRaca(String raca) {

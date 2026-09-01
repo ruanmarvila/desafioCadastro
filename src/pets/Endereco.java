@@ -3,7 +3,6 @@ package pets;
 import pets.excecoes.EnderecoInvalidoException;
 
 public class Endereco {
-    private static final String NAO_INFORMADO = "NÃO INFORMADO";
 
     private String rua;
     private String numero;
@@ -39,11 +38,11 @@ public class Endereco {
     }
 
     public String getNumeroFormatado() {
-        return numero != null ? numero : NAO_INFORMADO;
+        return numero != null ? numero : Constantes.NAO_INFORMADO;
     }
 
     public void setNumero(String numero) {
-        this.numero = numero == null || numero.isBlank() ? null : rua;
+        this.numero = numero == null || numero.isBlank() ? null : numero;
     }
 
     public String getCidade() {
