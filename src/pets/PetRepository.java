@@ -81,17 +81,21 @@ public class PetRepository {
             String pesoStr = linhas.get(5).split(" - ")[1];
             String raca = linhas.get(6).split(" - ")[1];
 
-            String endereco = linhas.get(3);
+            String endereco = linhas.get(3).split(" - ", 2)[1];
             String semPrefixo = endereco.startsWith("Rua ") ? endereco.substring(4) : endereco;
             String[] enderecoPartes = Arrays.stream(semPrefixo.split(","))
                     .map(String::trim)
+                    .map(campo -> campo.equals(Constantes.NAO_INFORMADO) ? null : campo)
                     .toArray(String[]::new);
             Endereco petEndereco = new Endereco(enderecoPartes);
 
-            Double idade = Double.parseDouble(idadeStr.split(" ")[0]);
-            Double peso = Double.parseDouble(pesoStr.split("kg")[0].trim());
+            Double idade = idadeStr.startsWith(Constantes.NAO_INFORMADO) ? null :
+                Double.parseDouble(idadeStr.split(" ")[0]);
+            Double peso = pesoStr.startsWith(Constantes.NAO_INFORMADO) ? null :
+                Double.parseDouble(pesoStr.split("kg")[0].trim());
+            String racaNormalizada = raca.equals(Constantes.NAO_INFORMADO) ? null : raca;
 
-            return new Pet(nome, tipo, sexo, petEndereco, idade, peso, raca);
+            return new Pet(nome, tipo, sexo, petEndereco, idade, peso, racaNormalizada);
  
         } catch (IOException e) {
             throw new RuntimeException("Erro ao ler o arquivo", e);
