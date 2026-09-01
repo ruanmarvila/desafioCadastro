@@ -1,7 +1,10 @@
 package pets;
 
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
 
 import pets.excecoes.IdadeInvalidaException;
 import pets.excecoes.PesoInvalidoException;
@@ -24,20 +27,31 @@ public class PetService {
     }
 
     public List<String> listarTodos() {
-        List<Pet> petsLista = repo.listarTodos();
-        List<String> pets = new ArrayList<>();
+        return formatarLista(repo.listarTodos());
+    }
 
+    public List<Pet> buscarPorCriterios(String tipoOpcao, Map<CriterioBusca, String> criterios) {
+        TipoPet tipoPet = TipoPet.fromOpcao(tipoOpcao);
+        List<Pet> todos = repo.listarTodos();
+
+        Predicate<Pet> filtro = pet -> pet.getTipoPet() == tipoPet;
+
+        for (Map.Entry<CriterioBusca, String> entry : criterios.entrySet()) {
+            filtro = filtro.and(criarPredicate(entry.getKey(), entry.getValue()));
+        }
+
+       return todos.stream().filter(filtro).toList();
+    }
+
+    public List<String> formatarLista(List<Pet> pets) {
+        List<String> formatados = new ArrayList<>();
         int contador = 1;
-        for (Pet pet : petsLista) {
-            pets.add(contador + ". " + formatarPet(pet));
+        for (Pet pet : pets) {
+            formatados.add(contador + ". " + formatarPet(pet));
             contador++;
         }
 
-        if (pets.isEmpty()) {
-            return List.of("[]");
-        }
-
-        return pets;
+        return formatados;
     }
 
     private static Double parseIdade(String[] idadeCampos) {
@@ -89,5 +103,28 @@ public class PetService {
         pet.getIdade() + " anos" + " - " + 
         pet.getPeso() + "kg - " + 
         pet.getRaca();
+    }
+
+    private Predicate<Pet> criarPredicate(CriterioBusca criterio, String valor) {
+        return switch(criterio) {
+            case NOME -> pet -> normalizar(pet.getNome()).contains(normalizar(valor));
+            case SEXO -> pet -> pet.getSexoPet() == SexoPet.fromOpcao(valor);
+            case IDADE -> pet -> pet.getIdade() != null
+                && pet.getIdade().equals(Double.parseDouble(valor.replace(",", ".")));
+            case PESO -> pet -> pet.getPeso() != null
+                && pet.getPeso().equals(Double.parseDouble(valor.replace(",", ".")));
+            case RACA -> pet -> pet.getRaca() != null
+                && normalizar(pet.getRaca()).equals(normalizar(valor));
+            case ENDERECO -> pet -> pet.getEndereco() != null
+                && (normalizar(pet.getEndereco().getRua()).contains(normalizar(valor))
+                    || normalizar(pet.getEndereco().getCidade()).contains(normalizar(valor)));
+        };
+    }
+
+    private String normalizar(String texto) {
+        if (texto == null) return "";
+        String semAcento = Normalizer.normalize(texto, Normalizer.Form.NFD)
+            .replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
+        return semAcento.toLowerCase();
     }
 }

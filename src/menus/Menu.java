@@ -1,9 +1,12 @@
 package menus;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 import formulario.FormularioService;
+import pets.CriterioBusca;
 import pets.Pet;
 import pets.PetService;
 
@@ -32,7 +35,7 @@ public class Menu {
                         cadastrarPet();
                     }
                     case "2" -> {
-
+                        listarPetsFiltrados();
                     }
                     case "5" -> {
                         listarPets();
@@ -103,5 +106,42 @@ public class Menu {
     private void listarPets() {
         List<String> pets = petService.listarTodos();
         pets.forEach(System.out::println);
+    }
+
+    private void listarPetsFiltrados() {
+        System.out.println(
+            "Escolha o tipo do animal: " +
+            "1. Cachorro\n" +
+            "2. Gato"
+        );
+        String tipoOpcao = scanner.nextLine().trim();
+
+        Map<CriterioBusca, String> criteriosOpcionais = criteriosOpcionais();
+
+        List<Pet> resultado = petService.buscarPorCriterios(tipoOpcao, criteriosOpcionais);
+        List<String> exibicao = petService.formatarLista(resultado);
+        exibicao.forEach(System.out::println);
+    }
+
+    private Map<CriterioBusca, String> criteriosOpcionais() {
+        Map<CriterioBusca, String> criterios = new LinkedHashMap<>();
+
+        for(int i = 0; i < 2; i++) {
+            System.out.println(
+                "Escolha um critéiro opcional (ou 0 para pular):\n" +
+                "1. Nome\n2. Sexo\n3. Idade\n4. Peso\n5. Raça\n 6. Endereço"
+            );
+            String opcao = scanner.nextLine().trim();
+
+            if (opcao.equals("0")) break;
+
+            CriterioBusca criterio = CriterioBusca.fromOpcao(opcao);
+
+            System.out.println("Digite o valor para " + criterio + ":");
+            String valor = scanner.nextLine().trim();
+            criterios.put(criterio, valor);
+        }
+
+        return criterios;
     }
 }
