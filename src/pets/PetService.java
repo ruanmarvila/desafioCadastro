@@ -26,13 +26,13 @@ public class PetService {
         return pet;
     }
 
-    public List<String> listarTodos() {
-        return formatarLista(repo.listarTodos());
+    public List<String> buscarTodos() {
+        return formatarLista(repo.buscarTodos());
     }
 
     public List<Pet> buscarPorCriterios(String tipoOpcao, Map<CriterioBusca, String> criterios) {
         TipoPet tipoPet = TipoPet.fromOpcao(tipoOpcao);
-        List<Pet> todos = repo.listarTodos();
+        List<Pet> todos = repo.buscarTodos();
 
         Predicate<Pet> filtro = pet -> pet.getTipoPet() == tipoPet;
 
@@ -41,6 +41,35 @@ public class PetService {
         }
 
        return todos.stream().filter(filtro).toList();
+    }
+
+    public Pet alterarPet(Pet petEscolhido, String novoNome, String[] novoEndereco, String[] novaIdade, String novoPeso, String novaRaca) {
+        if (novoNome != null && !novoNome.isBlank()) {
+            petEscolhido.setNome(novoNome);
+        }
+        Double idade = parseIdade(novaIdade);
+        if (idade != null) {
+            petEscolhido.setIdade(idade);
+        }
+        Double peso = parsePeso(novoPeso);
+        if (peso != null) {
+            petEscolhido.setPeso(peso);
+        }
+        if (novaRaca != null && !novaRaca.isBlank()) {
+            petEscolhido.setRaca(novaRaca);
+        }
+        if (novoEndereco.length > 0 && novoEndereco[0] != null && !novoEndereco[0].isBlank()) {
+            petEscolhido.getEndereco().setRua(novoEndereco[1]);
+        }
+        if (novoEndereco.length > 1 && novoEndereco[1] != null && !novoEndereco[0].isBlank()) {
+            petEscolhido.getEndereco().setNumero(novoEndereco[1]);
+        }
+        if (novoEndereco.length > 2 && novoEndereco[2] != null && !novoEndereco[0].isBlank()) {
+            petEscolhido.getEndereco().setCidade(novoEndereco[2]);
+        }
+
+        repo.atualizarPet(petEscolhido);
+        return petEscolhido;
     }
 
     public List<String> formatarLista(List<Pet> pets) {

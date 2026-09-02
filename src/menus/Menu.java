@@ -35,7 +35,10 @@ public class Menu {
                         cadastrarPet();
                     }
                     case "2" -> {
-                        listarPetsFiltrados();
+                        exibirPets(listarPetsFiltrados());
+                    }
+                    case "3" -> {
+                        alterarPet();
                     }
                     case "5" -> {
                         listarPets();
@@ -104,11 +107,11 @@ public class Menu {
     }
 
     private void listarPets() {
-        List<String> pets = petService.listarTodos();
+        List<String> pets = petService.buscarTodos();
         pets.forEach(System.out::println);
     }
 
-    private void listarPetsFiltrados() {
+    private List<Pet> listarPetsFiltrados() {
         System.out.println(
             "Escolha o tipo do animal: " +
             "1. Cachorro\n" +
@@ -118,9 +121,52 @@ public class Menu {
 
         Map<CriterioBusca, String> criteriosOpcionais = criteriosOpcionais();
 
-        List<Pet> resultado = petService.buscarPorCriterios(tipoOpcao, criteriosOpcionais);
-        List<String> exibicao = petService.formatarLista(resultado);
-        exibicao.forEach(System.out::println);
+        return petService.buscarPorCriterios(tipoOpcao, criteriosOpcionais);
+    }
+
+    private void alterarPet() {
+        List<Pet> pets = listarPetsFiltrados();
+        exibirPets(pets);
+
+        if (pets.isEmpty()) return;
+
+        int escolha;
+        while (true) {
+            System.out.println("Escolha o número do pet que deseja alterar: ");
+            escolha = Integer.parseInt(scanner.nextLine().trim());
+
+            if (escolha > 0 && escolha <=pets.size()) {
+                break;
+            }
+        }
+        Pet petEscolhido = pets.get(escolha - 1);
+
+        System.out.println("Novo nome: ");
+        String novoNome = scanner.nextLine().trim();
+
+        System.out.println("Novo endereço: ");
+        System.out.println("Rua:");
+        String novaRua = scanner.nextLine().trim();
+
+        System.out.println("Número da casa:");
+        String novoNumero = scanner.nextLine().trim();
+
+        System.out.println("Cidade:");
+        String novaCidade = scanner.nextLine().trim();
+
+        String[] novoEnderecoCampos = {novaRua, novoNumero, novaCidade};
+
+        System.out.println("Nova idade:");
+        String[] novaIdade = scanner.nextLine().trim().split("\\s+");
+
+        System.out.println("Novo peso:");
+        String novoPeso = scanner.nextLine().trim();
+
+        System.out.println("Nova raça:");
+        String novaRaca = scanner.nextLine().trim();
+
+        petService.alterarPet(petEscolhido, novoNome, novoEnderecoCampos, novaIdade, novoPeso, novaRaca);
+        System.out.println("Pet atualizado com sucesso!");
     }
 
     private Map<CriterioBusca, String> criteriosOpcionais() {
@@ -143,5 +189,14 @@ public class Menu {
         }
 
         return criterios;
+    }
+
+    private void exibirPets(List<Pet> pets) {
+        if (pets.isEmpty()) {
+            System.out.println("Nenhum pet encontrado.");
+            return;
+        }
+
+        petService.formatarLista(pets).forEach(System.out::println);
     }
 }

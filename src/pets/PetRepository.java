@@ -9,10 +9,13 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PetRepository {
     private static final Path PASTA = Path.of("data/petsCadastrados");
+    private static final Map<Pet, Path> origemArquivos = new IdentityHashMap<>();
 
     public PetRepository() {
         criarPasta();
@@ -20,33 +23,32 @@ public class PetRepository {
 
     public void salvarPet(Pet pet) {
         Path arquivo = criarArquivo(pet.getNomeNormalizado());
-        Endereco petEndereco = pet.getEndereco();
-
-        try (BufferedWriter writer = Files.newBufferedWriter(arquivo)) {
-            writer.write("1 - "+pet.getNome()+"\n"+
-                        "2 - "+pet.getTipoPet().getFormatado()+"\n"+
-                        "3 - "+pet.getSexoPet().getFormatado()+"\n"+
-                        "4 - Rua "+petEndereco.getRua()+", "+petEndereco.getNumeroFormatado()+", "+petEndereco.getCidade()+"\n"+
-                        "5 - "+pet.getIdadeFormatada()+" anos\n"+
-                        "6 - "+pet.getPesoFormatado()+"kg\n"+
-                        "7 - "+pet.getRacaFormatada());
-
-        } catch (IOException e) {
-            throw new RuntimeException("Erro ao salvar no arquivo", e);
-        }
+        salvarConteudo(arquivo, pet);
     }
 
-    public List<Pet> listarTodos() {
+    public List<Pet> buscarTodos() {
         File pasta = new File(PASTA.toString());
         File[] arquivos = pasta.listFiles((dir, nome) -> nome.endsWith(".txt"));
         List<Pet> pets = new ArrayList<>();
 
         if (arquivos == null) return pets;
+        
         for (File arquivo : arquivos) {
-            pets.add(lerArquivo(arquivo));
+            Pet pet = lerArquivo(arquivo);
+            origemArquivos.put(pet, arquivo.toPath());
+            pets.add(pet);
         }
 
         return pets;
+    }
+
+    public void atualizarPet(Pet pet) {
+        Path arquivoOrigem = origemArquivos.get(pet);
+        if (arquivoOrigem == null) {
+            throw new RuntimeException("Pet não foi carregado.");
+        }
+
+        salvarConteudo(arquivoOrigem, pet);
     }
 
     private void criarPasta() {
@@ -67,6 +69,23 @@ public class PetRepository {
             return pathPet;
         } catch (IOException e) {
             throw new RuntimeException("Erro ao criar o arquivo", e);
+        }
+    }
+
+    private void salvarConteudo(Path arquivo, Pet pet) {
+        Endereco petEndereco = pet.getEndereco();
+
+        try (BufferedWriter writer = Files.newBufferedWriter(arquivo)) {
+            writer.write("1 - "+pet.getNome()+"\n"+
+                        "2 - "+pet.getTipoPet().getFormatado()+"\n"+
+                        "3 - "+pet.getSexoPet().getFormatado()+"\n"+
+                        "4 - Rua "+petEndereco.getRua()+", "+petEndereco.getNumeroFormatado()+", "+petEndereco.getCidade()+"\n"+
+                        "5 - "+pet.getIdadeFormatada()+" anos\n"+
+                        "6 - "+pet.getPesoFormatado()+"kg\n"+
+                        "7 - "+pet.getRacaFormatada());
+
+        } catch (IOException e) {
+            throw new RuntimeException("Erro ao salvar no arquivo", e);
         }
     }
 
@@ -101,4 +120,10 @@ public class PetRepository {
             throw new RuntimeException("Erro ao ler o arquivo", e);
         }
     }
+
+    // private LocalDateTime extrairDataCadastro(String nomeArquivo) {
+    //     String timestampStr = nomeArquivo.split("-")[0];
+    //     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmm");
+    //     return LocalDateTime.parse(timestampStr, formatter);
+    // }
 }
