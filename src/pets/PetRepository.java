@@ -51,6 +51,17 @@ public class PetRepository {
         salvarConteudo(arquivoOrigem, pet);
     }
 
+    public void deletarPet(Pet pet) {
+        Path arquivoOrigem = origemArquivos.get(pet);
+        
+        try {
+            Files.deleteIfExists(arquivoOrigem);
+            origemArquivos.remove(pet);
+        } catch (IOException e) {
+            throw new RuntimeException("Erro ao deletar pet");
+        }
+    }
+
     private void criarPasta() {
         try {
             Files.createDirectories(PASTA);

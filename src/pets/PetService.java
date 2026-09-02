@@ -72,6 +72,10 @@ public class PetService {
         return petEscolhido;
     }
 
+    public void deletarPet(Pet pet) {
+        repo.deletarPet(pet);
+    }
+
     public List<String> formatarLista(List<Pet> pets) {
         List<String> formatados = new ArrayList<>();
         int contador = 1;

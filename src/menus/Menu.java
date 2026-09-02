@@ -40,6 +40,9 @@ public class Menu {
                     case "3" -> {
                         alterarPet();
                     }
+                    case "4" -> {
+                        deletarPet();
+                    }
                     case "5" -> {
                         listarPets();
                     }
@@ -125,21 +128,7 @@ public class Menu {
     }
 
     private void alterarPet() {
-        List<Pet> pets = listarPetsFiltrados();
-        exibirPets(pets);
-
-        if (pets.isEmpty()) return;
-
-        int escolha;
-        while (true) {
-            System.out.println("Escolha o número do pet que deseja alterar: ");
-            escolha = Integer.parseInt(scanner.nextLine().trim());
-
-            if (escolha > 0 && escolha <=pets.size()) {
-                break;
-            }
-        }
-        Pet petEscolhido = pets.get(escolha - 1);
+        Pet petEscolhido = buscarESelecionarPet();
 
         System.out.println("Novo nome: ");
         String novoNome = scanner.nextLine().trim();
@@ -165,8 +154,29 @@ public class Menu {
         System.out.println("Nova raça:");
         String novaRaca = scanner.nextLine().trim();
 
-        petService.alterarPet(petEscolhido, novoNome, novoEnderecoCampos, novaIdade, novoPeso, novaRaca);
-        System.out.println("Pet atualizado com sucesso!");
+        Pet pet = petService.alterarPet(petEscolhido, novoNome, novoEnderecoCampos, novaIdade, novoPeso, novaRaca);
+        System.out.println("Pet atualizado com sucesso: " + pet.getNome());
+    }
+
+    public void deletarPet() {
+        Pet petEscolhido = buscarESelecionarPet();
+
+        String resposta;
+        while (true) {
+            System.out.println("Tem certeza que deseja excluir: " + petEscolhido.getNome());
+            resposta = scanner.nextLine().trim().toUpperCase();
+
+            if (resposta.equals("SIM") || resposta.equals("NÃO")) {
+                break;
+            }
+        }
+
+        if (resposta.equals("NÃO")) {
+            System.out.println("Exclusão cancelada.");
+            return;
+        }
+        petService.deletarPet(petEscolhido);
+        System.out.println("Pet excluído com sucesso!");
     }
 
     private Map<CriterioBusca, String> criteriosOpcionais() {
@@ -198,5 +208,23 @@ public class Menu {
         }
 
         petService.formatarLista(pets).forEach(System.out::println);
+    }
+
+    private Pet buscarESelecionarPet() {
+        List<Pet> pets = listarPetsFiltrados();
+        exibirPets(pets);
+
+        if (pets.isEmpty()) return null;
+
+        int escolha;
+        while (true) {
+            System.out.println("Escolha o número do pet que deseja alterar: ");
+            escolha = Integer.parseInt(scanner.nextLine().trim());
+
+            if (escolha > 0 && escolha <=pets.size()) {
+                break;
+            }
+        }
+        return pets.get(escolha - 1);
     }
 }
