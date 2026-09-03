@@ -1,6 +1,7 @@
 package pets;
 
 import java.text.Normalizer;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,11 +27,11 @@ public class PetService {
         return pet;
     }
 
-    public List<String> buscarTodos() {
-        return formatarLista(repo.buscarTodos());
+    public List<Pet> buscarTodos() {
+        return repo.buscarTodos();
     }
 
-    public List<Pet> buscarPorCriterios(String tipoOpcao, Map<CriterioBusca, String> criterios) {
+    public List<Pet> buscarPorCriterios(String tipoOpcao, Map<CriterioBusca, String> criterios, Integer mes, Integer ano) {
         TipoPet tipoPet = TipoPet.fromOpcao(tipoOpcao);
         List<Pet> todos = repo.buscarTodos();
 
@@ -38,6 +39,13 @@ public class PetService {
 
         for (Map.Entry<CriterioBusca, String> entry : criterios.entrySet()) {
             filtro = filtro.and(criarPredicate(entry.getKey(), entry.getValue()));
+        }
+
+        if (mes != null && ano != null) {
+            filtro = filtro.and(pet -> {
+                LocalDateTime data = repo.getDataCadastro(pet);
+                return data != null && data.getMonthValue() == mes && data.getYear() == ano;
+            });
         }
 
        return todos.stream().filter(filtro).toList();
@@ -76,15 +84,40 @@ public class PetService {
         repo.deletarPet(pet);
     }
 
-    public List<String> formatarLista(List<Pet> pets) {
+    public List<String> formatarLista(List<Pet> pets, Map<CriterioBusca, String> criterios) {
         List<String> formatados = new ArrayList<>();
         int contador = 1;
         for (Pet pet : pets) {
-            formatados.add(contador + ". " + formatarPet(pet));
+            formatados.add(contador + ". " + formatarPet(pet, criterios));
             contador++;
         }
 
         return formatados;
+    }
+
+    // PetService.java
+    private String formatarPet(Pet pet, Map<CriterioBusca, String> criterios) {
+        String nome = destacarSeCriterio(pet.getNome(), CriterioBusca.NOME, criterios);
+        String raca = destacarSeCriterio(pet.getRacaFormatada(), CriterioBusca.RACA, criterios);
+        String rua = destacarSeCriterio(pet.getEndereco().getRua(), CriterioBusca.ENDERECO, criterios);
+        String cidade = destacarSeCriterio(pet.getEndereco().getCidade(), CriterioBusca.ENDERECO, criterios);
+
+        return nome + " - " +
+            pet.getTipoPet().getFormatado() + " - " +
+            pet.getSexoPet().getFormatado() + " - Rua " +
+            rua + ", " +
+            pet.getEndereco().getNumeroFormatado() + ", " +
+            cidade + " - " +
+            pet.getIdadeFormatada() + " anos - " +
+            pet.getPesoFormatado() + "kg - " +
+            raca;
+    }
+
+    private String destacarSeCriterio(String texto, CriterioBusca criterio, Map<CriterioBusca, String> criterios) {
+        if (texto == null || !criterios.containsKey(criterio)) {
+            return texto;
+        }
+        return "\u001B[1m" + texto + "\u001B[0m";
     }
 
     private static Double parseIdade(String[] idadeCampos) {
@@ -124,18 +157,6 @@ public class PetService {
             throw new PesoInvalidoException("Peso deve ser um número válido.");
         }
         return peso;
-    }
-
-    private String formatarPet(Pet pet) {
-        return pet.getNome() + " - " + 
-        pet.getTipoPet().getFormatado() + " - " + 
-        pet.getSexoPet().getFormatado() + " - Rua " + 
-        pet.getEndereco().getRua() + ", " + 
-        pet.getEndereco().getNumeroFormatado() + ", " + 
-        pet.getEndereco().getCidade() + " - " + 
-        pet.getIdade() + " anos" + " - " + 
-        pet.getPeso() + "kg - " + 
-        pet.getRaca();
     }
 
     private Predicate<Pet> criarPredicate(CriterioBusca criterio, String valor) {

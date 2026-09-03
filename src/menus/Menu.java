@@ -35,7 +35,8 @@ public class Menu {
                         cadastrarPet();
                     }
                     case "2" -> {
-                        exibirPets(listarPetsFiltrados());
+                        ResultadoBusca resultado = listarPetsFiltrados();
+                        exibirPets(resultado.pets(), resultado.criterios());
                     }
                     case "3" -> {
                         alterarPet();
@@ -44,7 +45,7 @@ public class Menu {
                         deletarPet();
                     }
                     case "5" -> {
-                        listarPets();
+                        exibirPets(listarPets(), null);
                     }
                     case "6" -> {
                         System.out.println("Saindo...");
@@ -109,12 +110,11 @@ public class Menu {
         System.out.println("Pet cadastrado com sucesso: " + pet.getNome());
     }
 
-    private void listarPets() {
-        List<String> pets = petService.buscarTodos();
-        pets.forEach(System.out::println);
+    private List<Pet> listarPets() {
+        return petService.buscarTodos();
     }
 
-    private List<Pet> listarPetsFiltrados() {
+    private ResultadoBusca listarPetsFiltrados() {
         System.out.println(
             "Escolha o tipo do animal: " +
             "1. Cachorro\n" +
@@ -122,9 +122,22 @@ public class Menu {
         );
         String tipoOpcao = scanner.nextLine().trim();
 
-        Map<CriterioBusca, String> criteriosOpcionais = criteriosOpcionais();
+        System.out.println("Quer buscar por data de cadastro?");
+        String resposta = scanner.nextLine().trim().toUpperCase();
 
-        return petService.buscarPorCriterios(tipoOpcao, criteriosOpcionais);
+        Integer mes = null, ano = null;
+        if (resposta.equals("SIM")) {
+            System.out.println("Digite o mês:");
+            mes = Integer.parseInt(scanner.nextLine().trim());
+
+            System.out.println("Digite o ano:");
+            ano =  Integer.parseInt(scanner.nextLine().trim());
+        } 
+
+        Map<CriterioBusca, String> criteriosOpcionais = criteriosOpcionais();
+        List<Pet> resultado = petService.buscarPorCriterios(tipoOpcao, criteriosOpcionais, mes, ano);
+
+        return new ResultadoBusca(resultado, criteriosOpcionais);
     }
 
     private void alterarPet() {
@@ -201,30 +214,31 @@ public class Menu {
         return criterios;
     }
 
-    private void exibirPets(List<Pet> pets) {
+    private void exibirPets(List<Pet> pets, Map<CriterioBusca, String> criterios) {
         if (pets.isEmpty()) {
             System.out.println("Nenhum pet encontrado.");
             return;
         }
 
-        petService.formatarLista(pets).forEach(System.out::println);
+        petService.formatarLista(pets, criterios).forEach(System.out::println);
     }
 
     private Pet buscarESelecionarPet() {
-        List<Pet> pets = listarPetsFiltrados();
-        exibirPets(pets);
+        ResultadoBusca busca = listarPetsFiltrados();
+        exibirPets(busca.pets(), busca.criterios());
 
-        if (pets.isEmpty()) return null;
+        if (busca.pets().isEmpty()) return null;
 
         int escolha;
         while (true) {
             System.out.println("Escolha o número do pet que deseja alterar: ");
             escolha = Integer.parseInt(scanner.nextLine().trim());
 
-            if (escolha > 0 && escolha <=pets.size()) {
+            if (escolha > 0 && escolha <=busca.pets().size()) {
                 break;
             }
         }
-        return pets.get(escolha - 1);
+        return busca.pets().get(escolha - 1);
     }
+    private record ResultadoBusca(List<Pet> pets, Map<CriterioBusca, String> criterios) {}
 }

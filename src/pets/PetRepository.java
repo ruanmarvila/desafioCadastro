@@ -62,6 +62,17 @@ public class PetRepository {
         }
     }
 
+    public LocalDateTime getDataCadastro(Pet pet) {
+        Path arquvioOrigem = origemArquivos.get(pet);
+        return extrairDataCadastro(arquvioOrigem.toString());
+    }
+
+    private LocalDateTime extrairDataCadastro(String nomeArquivo) {
+        String timestampStr = nomeArquivo.split("-")[0];
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmm");
+        return LocalDateTime.parse(timestampStr, formatter);
+    }
+
     private void criarPasta() {
         try {
             Files.createDirectories(PASTA);
@@ -131,10 +142,4 @@ public class PetRepository {
             throw new RuntimeException("Erro ao ler o arquivo", e);
         }
     }
-
-    // private LocalDateTime extrairDataCadastro(String nomeArquivo) {
-    //     String timestampStr = nomeArquivo.split("-")[0];
-    //     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmm");
-    //     return LocalDateTime.parse(timestampStr, formatter);
-    // }
 }
