@@ -1,18 +1,17 @@
 package formulario;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 
 public class FormularioService {
-    private static final Path pathForm = Path.of("data/formulario.txt");
+    private static final FormularioRepository repo = new FormularioRepository();
 
     public List<String> lerPerguntas() {
-        try {
-            return Files.readAllLines(pathForm);
-        } catch (IOException e) {
-            throw new RuntimeException("Erro ao ler o formulário", e);
-        }
+        return repo.lerPerguntas();
+    }
+
+    public void criarPergunta(String novaPergunta) {
+        int numeroPergunta = repo.lerPerguntas().size() + 1;
+        Pergunta pergunta = new Pergunta(numeroPergunta, novaPergunta);
+        repo.salvarPergunta(pergunta);
     }
 }

@@ -95,7 +95,6 @@ public class PetService {
         return formatados;
     }
 
-    // PetService.java
     private String formatarPet(Pet pet, Map<CriterioBusca, String> criterios) {
         String nome = destacarSeCriterio(pet.getNome(), CriterioBusca.NOME, criterios);
         String raca = destacarSeCriterio(pet.getRacaFormatada(), CriterioBusca.RACA, criterios);

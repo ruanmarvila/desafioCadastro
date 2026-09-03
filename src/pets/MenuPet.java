@@ -1,4 +1,4 @@
-package menus;
+package pets;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -6,16 +6,19 @@ import java.util.Map;
 import java.util.Scanner;
 
 import formulario.FormularioService;
-import pets.CriterioBusca;
-import pets.Pet;
-import pets.PetService;
 
-public class Menu {
-    private final Scanner scanner = new Scanner(System.in);
-    private final FormularioService formService = new FormularioService();
-    private final PetService petService = new PetService();
+public class MenuPet {
+    private final Scanner scanner;
+    private final FormularioService formService;
+    private final PetService petService;
 
-    public void menuInicial() {
+    public MenuPet(Scanner scanner) {
+        this.scanner = scanner;
+        this.formService = new FormularioService();
+        this.petService = new PetService();
+    }
+
+    public void exibir() {
         while (true) {
             System.out.println(
                 "1. Cadastrar um novo pet\n" +
@@ -26,42 +29,24 @@ public class Menu {
                 "6. Sair"
             );
 
-            try {
                 System.out.println("Escolha uma opção de 1 a 6");
-                String opcao = scanner.nextLine();
+                String opcao = scanner.nextLine().trim();
 
                 switch (opcao) {
-                    case "1" -> {
-                        cadastrarPet();
-                    }
+                    case "1" -> cadastrarPet();
                     case "2" -> {
                         ResultadoBusca resultado = listarPetsFiltrados();
                         exibirPets(resultado.pets(), resultado.criterios());
                     }
-                    case "3" -> {
-                        alterarPet();
-                    }
-                    case "4" -> {
-                        deletarPet();
-                    }
-                    case "5" -> {
-                        exibirPets(listarPets(), null);
-                    }
+                    case "3" -> alterarPet();
+                    case "4" -> deletarPet();
+                    case "5" -> exibirPets(listarPets(), null);
                     case "6" -> {
                         System.out.println("Saindo...");
+                        System.exit(0);
                     }
-                    default -> {
-                        System.out.println("Opção inválida. Tente novamente!");
-                    }
-                }
-
-                if (opcao.equals("6")) {
-                    break;
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+                    default -> System.out.println("Opção inválida. Tente novamente!");
+                };
         }
     }
 
@@ -240,5 +225,6 @@ public class Menu {
         }
         return busca.pets().get(escolha - 1);
     }
+    
     private record ResultadoBusca(List<Pet> pets, Map<CriterioBusca, String> criterios) {}
 }

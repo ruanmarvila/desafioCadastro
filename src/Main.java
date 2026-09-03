@@ -1,8 +1,8 @@
-import menus.Menu;
+import java.util.Scanner;
 
 public class Main {
-    private static Menu menu = new Menu();
     public static void main(String[] args) {
-        menu.menuInicial();
+        Scanner scanner = new Scanner(System.in);
+        new TelaInicial(scanner).exibir();
     }
 }
