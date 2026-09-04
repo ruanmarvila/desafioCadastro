@@ -1,11 +1,14 @@
 package pets;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
 import formulario.FormularioService;
+import formulario.Pergunta;
+import formulario.RespostaExtras;
 
 public class MenuPet {
     private final Scanner scanner;
@@ -51,26 +54,26 @@ public class MenuPet {
     }
 
     private void cadastrarPet() {
-        List<String> perguntas = formService.lerPerguntas();
+        List<Pergunta> perguntas = formService.lerPerguntas();
 
-        System.out.println(perguntas.get(0));
+        System.out.println(perguntas.get(0).getTexto());
         String nome = scanner.nextLine().trim();
 
-        System.out.println(perguntas.get(1));
+        System.out.println(perguntas.get(1).getTexto());
         System.out.println(
             "1. Cachorro\n" +
             "2. Gato"
         );
         String tipo = scanner.nextLine().trim();
 
-        System.out.println(perguntas.get(2));
+        System.out.println(perguntas.get(2).getTexto());
         System.out.println(
             "1. Macho\n" +
             "2. Fêmea"
         );
         String sexo = scanner.nextLine().trim();
 
-        System.out.println(perguntas.get(3));
+        System.out.println(perguntas.get(3).getTexto());
         System.out.println("Rua:");
         String rua = scanner.nextLine().trim();
 
@@ -82,16 +85,25 @@ public class MenuPet {
 
         String[] enderecoCampos = {rua, numero, cidade};
 
-        System.out.println(perguntas.get(4));
+        System.out.println(perguntas.get(4).getTexto());
         String[] idade = scanner.nextLine().trim().split("\\s+");
 
-        System.out.println(perguntas.get(5));
+        System.out.println(perguntas.get(5).getTexto());
         String peso = scanner.nextLine().trim();
 
-        System.out.println(perguntas.get(6));
+        System.out.println(perguntas.get(6).getTexto());
         String raca = scanner.nextLine().trim();
 
-        Pet pet = petService.cadastrar(nome, tipo, sexo, enderecoCampos, idade, peso, raca);
+        List<RespostaExtras> extras = new ArrayList<>();
+        if (perguntas.size() > 7) {
+            for (int i = 7; i < perguntas.size(); i++) {
+                System.out.println(perguntas.get(i).getTexto());
+                String respota = scanner.nextLine().trim();
+                extras.add(new RespostaExtras(perguntas.get(i), respota));
+            }
+        }
+
+        Pet pet = petService.cadastrar(nome, tipo, sexo, enderecoCampos, idade, peso, raca, extras);
         System.out.println("Pet cadastrado com sucesso: " + pet.getNome());
     }
 
@@ -127,6 +139,7 @@ public class MenuPet {
 
     private void alterarPet() {
         Pet petEscolhido = buscarESelecionarPet();
+        List<Pergunta> perguntasExtras = formService.lerPerguntasExtras();
 
         System.out.println("Novo nome: ");
         String novoNome = scanner.nextLine().trim();
@@ -151,6 +164,13 @@ public class MenuPet {
 
         System.out.println("Nova raça:");
         String novaRaca = scanner.nextLine().trim();
+
+        List<RespostaExtras> extras = new ArrayList<>();
+        for (Pergunta pergunta : perguntasExtras) {
+            System.out.println(pergunta);
+            String resposta = scanner.nextLine().trim();
+            extras.add(new RespostaExtras(pergunta, resposta));
+        }
 
         Pet pet = petService.alterarPet(petEscolhido, novoNome, novoEnderecoCampos, novaIdade, novoPeso, novaRaca);
         System.out.println("Pet atualizado com sucesso: " + pet.getNome());

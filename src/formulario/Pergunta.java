@@ -1,8 +1,9 @@
 package formulario;
 
 public class Pergunta {
-    
-    private Integer numero;
+    private static final int ORIGINAIS = 7;
+
+    private int numero;
     private String texto;
 
     public Pergunta(Integer numero, String texto) {
@@ -14,15 +15,19 @@ public class Pergunta {
         return numero;
     }
 
-    public void setNumero(Integer numero) {
-        this.numero = numero;
-    }
-
     public String getTexto() {
         return texto;
     }
 
-    public void setTexto(String texto) {
-        this.texto = texto;
+    public boolean isOriginal() {
+        if (numero > ORIGINAIS) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return numero + " - " + texto;
     }
 }

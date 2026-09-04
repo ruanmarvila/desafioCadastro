@@ -13,6 +13,8 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
+import formulario.RespostaExtras;
+
 public class PetRepository {
     private static final Path PASTA = Path.of("data/petsCadastrados");
     private static final Map<Pet, Path> origemArquivos = new IdentityHashMap<>();
@@ -21,9 +23,9 @@ public class PetRepository {
         criarPasta();
     }
 
-    public void salvarPet(Pet pet) {
+    public void salvarPet(Pet pet, List<RespostaExtras> extras) {
         Path arquivo = criarArquivo(pet.getNomeNormalizado());
-        salvarConteudo(arquivo, pet);
+        salvarConteudo(arquivo, pet, extras);
     }
 
     public List<Pet> buscarTodos() {
@@ -48,7 +50,7 @@ public class PetRepository {
             throw new RuntimeException("Pet não foi carregado.");
         }
 
-        salvarConteudo(arquivoOrigem, pet);
+        salvarConteudo(arquivoOrigem, pet, null);
     }
 
     public void deletarPet(Pet pet) {
@@ -94,18 +96,28 @@ public class PetRepository {
         }
     }
 
-    private void salvarConteudo(Path arquivo, Pet pet) {
+    private void salvarConteudo(Path arquivo, Pet pet, List<RespostaExtras> extras) {
         Endereco petEndereco = pet.getEndereco();
 
+        StringBuilder conteudo = new StringBuilder();
+        conteudo.append("1 - ").append(pet.getNome()).append("\n")
+                .append("2 - ").append(pet.getTipoPet().getFormatado()).append("\n")
+                .append("3 - ").append(pet.getSexoPet().getFormatado()).append("\n")
+                .append("4 - Rua ").append(petEndereco.getRua()).append(", ")
+                    .append(petEndereco.getCidade()).append(", ")
+                    .append(petEndereco.getCidade()).append("\n")
+                .append("5 - ").append(pet.getIdadeFormatada()).append(" anos\n")
+                .append("6 - ").append(pet.getPesoFormatado()).append("kg\n")
+                .append("7 - ").append(pet.getRacaFormatada());
+        
+        for (RespostaExtras extra : extras) {
+            conteudo.append("\n").append(extra.pergunta().getNumero()).append(" - ")
+                    .append("[EXTRA - ").append(extra.pergunta().getTexto()).append("]")
+                    .append(" - ").append(extra.resposta());
+        }
+        
         try (BufferedWriter writer = Files.newBufferedWriter(arquivo)) {
-            writer.write("1 - "+pet.getNome()+"\n"+
-                        "2 - "+pet.getTipoPet().getFormatado()+"\n"+
-                        "3 - "+pet.getSexoPet().getFormatado()+"\n"+
-                        "4 - Rua "+petEndereco.getRua()+", "+petEndereco.getNumeroFormatado()+", "+petEndereco.getCidade()+"\n"+
-                        "5 - "+pet.getIdadeFormatada()+" anos\n"+
-                        "6 - "+pet.getPesoFormatado()+"kg\n"+
-                        "7 - "+pet.getRacaFormatada());
-
+            writer.write(conteudo.toString());
         } catch (IOException e) {
             throw new RuntimeException("Erro ao salvar no arquivo", e);
         }

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import formulario.RespostaExtras;
 import pets.excecoes.IdadeInvalidaException;
 import pets.excecoes.PesoInvalidoException;
 
@@ -14,7 +15,7 @@ public class PetService {
     private static PetRepository repo = new PetRepository();
 
     public Pet cadastrar(String nome, String tipoOpcao, String sexoOpcao, String[] enderecoCampos, 
-        String[] idadeCampos, String pesoStr, String raca){
+        String[] idadeCampos, String pesoStr, String raca, List<RespostaExtras> extras){
 
         TipoPet tipoPet = TipoPet.fromOpcao(tipoOpcao);
         SexoPet sexoPet = SexoPet.fromOpcao(sexoOpcao);
@@ -23,7 +24,10 @@ public class PetService {
         Double peso = parsePeso(pesoStr);
 
         Pet pet = new Pet(nome, tipoPet, sexoPet, endereco, idade, peso, raca);
-        repo.salvarPet(pet);
+
+        List<RespostaExtras> extrasNormalizadas = normalizarExtras(extras); 
+
+        repo.salvarPet(pet, extrasNormalizadas);
         return pet;
     }
 
@@ -156,6 +160,15 @@ public class PetService {
             throw new PesoInvalidoException("Peso deve ser um número válido.");
         }
         return peso;
+    }
+
+    private List<RespostaExtras> normalizarExtras(List<RespostaExtras> extras) {
+        return extras.stream()
+            .map(e -> new RespostaExtras(
+                e.pergunta(),
+                e.resposta().isBlank() ? Constantes.NAO_INFORMADO : e.resposta()
+            ))
+            .toList();
     }
 
     private Predicate<Pet> criarPredicate(CriterioBusca criterio, String valor) {
